@@ -1,0 +1,10 @@
+#ifndef DOLPHIN_API
+#define DOLPHIN_API
+
+#include <dol_api/memory.h>
+#include <dol_api/VectorType.h>
+#include <dol_api/reduce.h>
+#include <dol_api/mvm/MVMHandle.h>
+#include <dol_api/mvm/MVMProcessing.h>
+
+#endif //DOLPHIN_API
