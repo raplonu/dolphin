@@ -1,6 +1,7 @@
 #ifndef DOL_MVM_MVM_PROCESSING_H
 #define DOL_MVM_MVM_PROCESSING_H
 
+#include <dol_api/function.h>
 #include <dol_api/reduce.h>
 #include <dol_api/memory.h>
 #include <dol_api/VectorType.h>
@@ -45,8 +46,8 @@ namespace dol
 
         __device__ MVMProcessing(int x, int y, int xAlign):
             xDim(x / VL), yDim(y), xRemaining(x % VL), xAlignDim(xAlign / VL), 
-            linePerBlock(0),//itemPerBlockLocalNb(y)), //FIX THIS !!!
-            lineStart(42),//BID * itemPerBlockNb(y)), //FIX THIS !!!
+            linePerBlock(itemPerBlockLocalNb(y)), //FIX THIS !!!
+            lineStart(BID * itemPerBlockNb(y)), //FIX THIS !!!
             lineStartIrregular(lineStart + (linePerBlock / PL) * PL),
             lineRemaining(linePerBlock % PL)
         {
@@ -175,8 +176,6 @@ namespace dol
         }
 
     };
-
-    template class MVMProcessing<float, 1024, 4, 4>; //compite test
 }
 
 #endif //DOL_MVM_MVM_PROCESSING_H
