@@ -74,8 +74,31 @@ __global__ void copy_cub_shared(DataT * __restrict__  dst, const DataT * src, in
 // BENCHMARK
 //#####################################################
 
-const int NB{32768};
+const int NB{2097152};
 
+static void dol_copyMemCpy(State& state) {
+    ci::DeviceContainer<DataT> src(NB), dst(NB);
+    ci::Event beg, end;
+
+    for (auto _ : state)
+    {
+        thrust::device_ptr<DataT> p_dst(dst.ptr());
+        thrust::device_ptr<const DataT> p_src(src.ptr());
+
+        beg.record();
+
+        ci::copy(p_dst, p_src, NB);
+
+        end.record();
+        end.synchronize();
+
+        state.SetIterationTime(ci::elapsedTime(beg, end));
+        
+    }
+    double totalData = state.iterations() * 2 * NB * sizeof(DataT) * 1000;
+    state.counters["Bandwidth"] = Counter(totalData, Counter::kIsRate);
+}
+BENCHMARK(dol_copyMemCpy)->UseManualTime();
 
 static void dol_copySimple(State& state) {
     ci::DeviceContainer<DataT> src(NB), dst(NB);
@@ -91,8 +114,10 @@ static void dol_copySimple(State& state) {
         end.synchronize();
 
         state.SetIterationTime(ci::elapsedTime(beg, end));
+        
     }
-
+    double totalData = state.iterations() * 2 * NB * sizeof(DataT) * 1000;
+    state.counters["Bandwidth"] = Counter(totalData, Counter::kIsRate);
 }
 BENCHMARK(dol_copySimple)->UseManualTime();
 
@@ -111,6 +136,8 @@ static void dol_copyVect(State& state) {
 
         state.SetIterationTime(ci::elapsedTime(beg, end));
     }
+    double totalData = state.iterations() * 2 * NB * sizeof(DataT) * 1000;
+    state.counters["Bandwidth"] = Counter(totalData, Counter::kIsRate);
 }
 BENCHMARK(dol_copyVect)->UseManualTime();
 
@@ -129,6 +156,9 @@ static void dol_copyCub(State& state) {
 
         state.SetIterationTime(ci::elapsedTime(beg, end));
     }
+    double totalData = state.iterations() * 2 * NB * sizeof(DataT) * 1000;
+    state.counters["Bandwidth"] = Counter(totalData, Counter::kIsRate);
+
 }
 BENCHMARK(dol_copyCub)->UseManualTime();
 
@@ -147,6 +177,9 @@ static void dol_copyCubShared(State& state) {
 
         state.SetIterationTime(ci::elapsedTime(beg, end));
     }
+    double totalData = state.iterations() * 2 * NB * sizeof(DataT) * 1000;
+    state.counters["Bandwidth"] = Counter(totalData, Counter::kIsRate);
+
 }
 BENCHMARK(dol_copyCubShared)->UseManualTime();
 
@@ -165,5 +198,8 @@ static void dol_copyThrust(State& state) {
 
         state.SetIterationTime(ci::elapsedTime(beg, end));
     }
+    double totalData = state.iterations() * 2 * NB * sizeof(DataT) * 1000;
+    state.counters["Bandwidth"] = Counter(totalData, Counter::kIsRate);
+
 }
 BENCHMARK(dol_copyThrust)->UseManualTime();
