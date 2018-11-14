@@ -28,8 +28,8 @@ namespace dol
 
         ci::syncthreads();
 
-        // maybe only select ward.id == 0 to do second reduction
         return warpReduce(loadAt(tmpShared, warp.pos));
+        
     }
 }
 

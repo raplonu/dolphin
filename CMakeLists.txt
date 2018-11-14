@@ -15,6 +15,12 @@ if(NOT TARGET CUB)
 	target_include_directories(CUB INTERFACE tplib/cub-1.8.0)
 endif()
 
+if(NOT TARGET half)
+	project(half LANGUAGES CXX)
+	add_library(half INTERFACE)
+	target_include_directories(half INTERFACE tplib/half)
+endif()
+
 project(Dolphin LANGUAGES CXX CUDA)
 
 add_library(Dolphin SHARED
@@ -23,7 +29,7 @@ add_library(Dolphin SHARED
 
 target_compile_features(Dolphin PUBLIC cxx_std_14)
 
-target_link_libraries(Dolphin PUBLIC CudaInterface::Cxx CudaInterface::Cu CUB)
+target_link_libraries(Dolphin PUBLIC CudaInterface::Cxx CudaInterface::Cu CUB half)
 
 target_include_directories(Dolphin PUBLIC inc PRIVATE src)
 

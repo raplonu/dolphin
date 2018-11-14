@@ -6,5 +6,6 @@
 #include <dol_api/reduce.h>
 #include <dol_api/mvm/MVMHandle.h>
 #include <dol_api/mvm/MVMProcessing.h>
+#include <dol_api/mvm/MVM.h>
 
 #endif //DOLPHIN_API

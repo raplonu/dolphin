@@ -22,10 +22,11 @@ namespace dol
     {
         using MVMHandle = MVMHandle<T, PL>;
         /**
-         * @brief Represent a vector of VL elements T
+         * @brief Represent a vector of PL elements T
          * 
          */
         using VectType = VectorType<T, VL>;
+        using VectType2 = VectorType<T, PL>;
         /**
          * @brief Represent a vector of PL vector
          * 
@@ -46,11 +47,14 @@ namespace dol
 
         __device__ MVMProcessing(int x, int y, int xAlign):
             xDim(x / VL), yDim(y), xRemaining(x % VL), xAlignDim(xAlign / VL), 
-            linePerBlock(itemPerBlockLocalNb(y)), //FIX THIS !!!
-            lineStart(BID * itemPerBlockNb(y)), //FIX THIS !!!
-            lineStartIrregular(lineStart + (linePerBlock / PL) * PL),
-            lineRemaining(linePerBlock % PL)
+            linePerBlock(itemPerBlockLocalNb(y) / PL * PL),
+            lineStart(BID * itemPerBlockNb(y)),
+            lineStartIrregular(lineStart + linePerBlock),
+            lineRemaining(itemPerBlockLocalNb(y) % PL)
         {
+            // if(TID0)
+            // printf("[%d] xDim %d yDim %d xRemaining %d xAlignDim %d linePerBlock %d lineStart %d lineStartIrregular %d lineRemaining %d\n",
+            // BID, xDim, yDim, xRemaining, xAlignDim, linePerBlock, lineStart, lineStartIrregular, lineRemaining);
             // TODO assert xAlign % VL == 0 !!
         }
 
@@ -70,13 +74,13 @@ namespace dol
 
         __device__ auto matrixLoader(const VectType * A, int x) {
             return [this, A, x] __device__ (int y) {
-                return loadAt(A, (lineStart + y) * xAlignDim + x);
+                return loadAt(A, y * xAlignDim + x);
             };
         }
 
         __device__ auto matrixLoaderIrregular(const VectType * A) {
             return [this, A] __device__ (int y) {
-                return loadAtIrregular(A, (lineStart + y) * xAlignDim + xDim);
+                return loadAtIrregular(A, y * xAlignDim + xDim);
             };
         }
 
@@ -95,74 +99,81 @@ namespace dol
             };
         }
 
-        __device__ auto exporter(VectType * Y, int line) {
-            return [this, Y = Y + line] __device__ (const VectType & data) {
-                store(Y, data);
+        __device__ auto exporter(VectType2 * Y) {
+            return [this, Y] __device__ (const VectType2 & data) {
+                if(TID0)
+                // {
+                //     printf("Reg %d -> %f %f\n", BID, data.get(0), data.get(1));
+                    store(Y, data);
+                // }
             };
         }
 
-        __device__ auto exporterIrregular(VectType * Y) {
-            return [this, Y = Y + lineStartIrregular] __device__ (const VectType & data) {
+        __device__ auto exporterIrregular(VectType2 * Y) {
+            return [this, Y = Y] __device__ (const VectType2 & data) {
                 auto YPtr = reinterpret_cast<T *>(Y);
 
-                for(int i{}; i < lineRemaining; ++i)
-                    storeAt(YPtr, data.get(i), i);
+                if(TID0)
+                    for(int i{}; i < lineRemaining; ++i)
+                    // {
+                    //     printf("Ire %d -> %f\n", BID, data.get(i));
+                        storeAt(YPtr, data.get(i), i);
+                    // }
             };
         }
 
         template <typename Compute, typename Export>
         __device__ void computeBlockGeneric(MVMHandle & handle, const VectType * A, const VectType * X,
                                                     Compute com, Export exp) {
+            
             BlockType localSpace;
+            localSpace = (VectType() = 0);
 
             int chunk(TID);
             for(; chunk < xDim; chunk += ThreadsNb)
                 com(localSpace, loadAt(X, chunk), matrixLoader(A, chunk));
 
-            if(chunk == xDim)
+            if(xRemaining && chunk == xDim)
                 com(localSpace, loadAtIrregular(X, chunk), matrixLoaderIrregular(A));
 
-            VectType tmp = localSpace.innerReduce();
+            VectType2 tmp;
 
-            ci::syncthreads();
+            #pragma unroll
+            for(int i{}; i < PL; ++i)
+                tmp.get(i) = localSpace.get(i).innerReduce();
 
             handle.reduce(tmp);
-
-            ci::syncthreads();
 
             exp(tmp);
         }
 
-        __device__ void computeBlockRegular(MVMHandle & handle, const VectType * A, const VectType * X, VectType * Y, int line)
-        {
+        __device__ void computeBlockRegular(MVMHandle & handle, const VectType * A, const VectType * X, VectType2 * Y, int line) {
             computeBlockGeneric(
                 handle, A, X,
                 computer(line),
-                exporter(Y, line)
+                exporter(Y + (line / PL))
             );
         }
 
-        __device__ void computeBlockIrregular(MVMHandle & handle, const VectType * A, const VectType * X, VectType * Y) {
+        __device__ void computeBlockIrregular(MVMHandle & handle, const VectType * A, const VectType * X, VectType2 * Y) {
             computeBlockGeneric(
                 handle, A, X,
                 computerIrregular(),
-                exporterIrregular(Y)
+                exporterIrregular(Y + (lineStartIrregular / PL))
             );
         }
 
-        __device__ void computeRegular(MVMHandle & handle, const VectType * A, const VectType * X, VectType * Y) {
+        __device__ void computeRegular(MVMHandle & handle, const VectType * A, const VectType * X, VectType2 * Y) {
             for (int line(0); line < linePerBlock; line += PL)
-                computeBlockRegular(handle, A, X, Y, line);
+                computeBlockRegular(handle, A, X, Y, line + lineStart);
         }
 
-        __device__ void computeIrregular(MVMHandle & handle, const VectType * A, const VectType * X, VectType * Y) {
+        __device__ void computeIrregular(MVMHandle & handle, const VectType * A, const VectType * X, VectType2 * Y) {
             if (lineRemaining > 0) computeBlockIrregular(handle, A, X, Y);
         }
 
-        __device__ void compute_(MVMHandle & handle, const VectType * A, const VectType * X, VectType * Y) {
+        __device__ void compute_(MVMHandle & handle, const VectType * A, const VectType * X, VectType2 * Y) {
             computeRegular(handle, A, X, Y);
-
-            ci::syncthreads();
 
             computeIrregular(handle, A, X, Y);
         }
@@ -172,63 +183,10 @@ namespace dol
             compute_(handle,
                 reinterpret_cast<const VectType*>(A),
                 reinterpret_cast<const VectType*>(X),
-                reinterpret_cast<VectType*>(Y));
+                reinterpret_cast<VectType2*>(Y));
         }
 
     };
 }
 
 #endif //DOL_MVM_MVM_PROCESSING_H
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // void compute_(MVMHandle & handle, const VectType * matrix, const VectType * X, VectType * Y)
-        // {
-        //     for(int line{offset}; line < linePerBlock; line += PL)
-        //     {
-        //         // Create accumulator
-        //         VectType[PL] accumulator; accumulator.fill(zero<T>());
-
-        //         // Create storage space for loading matrix
-        //         VectType[PL] matData;
-
-        //         for(int chunk{0}; chunk < y; chunk += ThreadsNb)
-        //         {
-        //             loadMatrix(matData, matrix + chunk + line * yAlign)
-
-
-        //             #pragma unroll
-        //             for(int j{}; j < PL; ++j)
-        //                 accumulator[j] += matData[j];
-        //         }
-
-        //         VectType<T, PL> tmp;
-
-        //         #pragma unroll
-        //         for(int j{}; j < PL; ++j)
-        //             tmp.get(j) = accumulator[j].innerReduce();
-
-        //         tmp = blockReduce(tmp, shared);
-
-        //         if(TID == 0)
-        //             storeAt(Y + BID, tmp);
-        //     }
-
-        //     //Process remaining lines
-
-
-        // }

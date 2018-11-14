@@ -15,12 +15,13 @@ namespace dol
         Handle handle;
         Processing processing;
 
+    public:
         CI_DEVICE MVM(T * shared, int x, int y, int xAlign):
             handle(shared), processing(x, y, xAlign)
         {}
 
         CI_DEVICE void compute(const T * A, const T * X, T * Y) {
-            processing.compute(handle,A, X, Y);
+            processing.compute(handle, A, X, Y);
         }
     };
     

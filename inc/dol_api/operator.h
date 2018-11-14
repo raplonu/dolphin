@@ -13,15 +13,15 @@ namespace dol
     // HALF2 arithmetic operator
     //#################################
 
-    __device__ inline half2 operator*(half2 a, half2 b) noexcept { return __hmul2(a, b); }
+    // __device__ inline half2 operator*(half2 a, half2 b) noexcept { return __hmul2(a, b); }
 
-    __device__ inline half2 operator/(half2 a, half2 b) noexcept { return __h2div(a, b); }
+    // __device__ inline half2 operator/(half2 a, half2 b) noexcept { return __h2div(a, b); }
 
-    __device__ inline half2 operator+(half2 a, half2 b) noexcept { return __hadd2(a, b); }
+    // __device__ inline half2 operator+(half2 a, half2 b) noexcept { return __hadd2(a, b); }
 
-    __device__ inline half2 operator-(half2 a, half2 b) noexcept { return __hsub2(a, b); }
+    // __device__ inline half2 operator-(half2 a, half2 b) noexcept { return __hsub2(a, b); }
 
-    __device__ inline half2 operator-(half2 a) noexcept { return __hneg2(a); }
+    // __device__ inline half2 operator-(half2 a) noexcept { return __hneg2(a); }
 
     //#################################
     // HALF arithmetic operator

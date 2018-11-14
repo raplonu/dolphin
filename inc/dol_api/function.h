@@ -14,6 +14,12 @@ namespace dol
     template <typename T>
     CI_HODE constexpr T ceil(T a, T b) noexcept { return (a + b - 1) / b; }
 
+    template<typename T>
+    CI_HODE constexpr T nextMul(T a, T b) { return ( (a-1) / b + 1) * b; }
+
+    template <typename T>
+    CI_HODE constexpr T align(T size) noexcept { return nextMul(size, 32); }
+
     template <class T>
     CI_HODE constexpr T max(T a, T b) noexcept { return (a < b) ? b : a; }
 

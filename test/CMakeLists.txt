@@ -6,10 +6,11 @@ add_executable(DolphinTest
     src/memoryTest.cu
     src/reduceTest.cu
     src/VectorTypeTest.cu
+    src/mvm/MVMTest.cu
 )
 
 target_link_libraries(DolphinTest
-    PRIVATE GTest::GTest GTest::Main Dolphin
+    PRIVATE GTest::GTest GTest::Main Dolphin cublas
 )
 
 gtest_add_tests(TARGET DolphinTest
