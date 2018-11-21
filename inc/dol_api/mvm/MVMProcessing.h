@@ -17,7 +17,7 @@ namespace dol
      * @tparam PL Parallel Line aka number of line processed in parallel
      * @tparam VL Vector Length aka number of contigious element that is processed by each thread
      */
-    template<typename T, int ThreadsNb, int PL, int VL>
+    template<typename T, int ThreadsNb, int PL = 1, int VL = 1>
     class MVMProcessing
     {
         using MVMHandle = MVMHandle<T, PL>;
@@ -185,7 +185,6 @@ namespace dol
                 reinterpret_cast<const VectType*>(X),
                 reinterpret_cast<VectType2*>(Y));
         }
-
     };
 }
 

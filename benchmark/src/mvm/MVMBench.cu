@@ -62,11 +62,7 @@ __global__ __launch_bounds__(1024, 2) void do_mvm(SharedReference<T> ref, int x,
 {
     MVM<T, ThreadsNb, PL, VL> mvm(ref.get(), x, y, xAlign);
 
-    ci::syncthreads();
-
     mvm.compute(A, X, Y);
-
-    ci::syncthreads();
 }
 
 //#####################################################
@@ -89,7 +85,10 @@ void dol_MVM(State& state) {
     {
         beg.record();
 
-        do_mvm<ThreadsNb, PL, VL><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
+        do_mvm<ThreadsNb, PL, VL><<<BLOCK,ThreadsNb, sc.memoryUsed()>>> (
+            ref, x, y, align(x),
+            data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get()
+        );
 
         end.record();
         end.synchronize();
@@ -156,17 +155,20 @@ void dol_MVM_cublas(State& state) {
     }
     double totalData = state.iterations() * x * y * sizeof(float);
     state.counters["Bandwidth"] = Counter(totalData, Counter::kIsRate);
+
+    cublasCheckError(cublasDestroy(handle));
+
 }
 
 
 BENCHMARK_TEMPLATE(dol_MVM, float, 1, 1)->UseManualTime();
-BENCHMARK_TEMPLATE(dol_MVM, float, 1, 2)->UseManualTime();
-BENCHMARK_TEMPLATE(dol_MVM, float, 1, 4)->UseManualTime();
-BENCHMARK_TEMPLATE(dol_MVM, float, 1, 8)->UseManualTime();
+// BENCHMARK_TEMPLATE(dol_MVM, float, 1, 2)->UseManualTime();
+// BENCHMARK_TEMPLATE(dol_MVM, float, 1, 4)->UseManualTime();
+// BENCHMARK_TEMPLATE(dol_MVM, float, 1, 8)->UseManualTime();
 
-BENCHMARK_TEMPLATE(dol_MVM_half, 1, 1)->UseManualTime();
+// BENCHMARK_TEMPLATE(dol_MVM_half, 1, 1)->UseManualTime();
 BENCHMARK_TEMPLATE(dol_MVM_half, 1, 2)->UseManualTime();
-BENCHMARK_TEMPLATE(dol_MVM_half, 1, 4)->UseManualTime();
-BENCHMARK_TEMPLATE(dol_MVM_half, 1, 8)->UseManualTime();
+// BENCHMARK_TEMPLATE(dol_MVM_half, 1, 4)->UseManualTime();
+// BENCHMARK_TEMPLATE(dol_MVM_half, 1, 8)->UseManualTime();
 
 BENCHMARK(dol_MVM_cublas)->UseManualTime();

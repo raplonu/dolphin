@@ -7,7 +7,7 @@
 
 namespace dol
 {
-    template<typename T, int PL>
+    template<typename T, int PL = 1>
     struct MVMHandle
     {
         using VectType = VectorType<T, PL>;

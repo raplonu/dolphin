@@ -6,7 +6,7 @@
 
 namespace dol
 {
-    template<typename T, int ThreadsNb, int PL, int VL>
+    template<typename T, int ThreadsNb, int PL = 1, int VL = 1>
     class MVM
     {
         using Handle = MVMHandle<T, PL>;
