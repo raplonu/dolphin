@@ -23,15 +23,13 @@ endif()
 
 project(Dolphin LANGUAGES CXX CUDA)
 
-add_library(Dolphin SHARED
-    src/void.cu
-)
+add_library(Dolphin INTERFACE)
 
-target_compile_features(Dolphin PUBLIC cxx_std_14)
+target_compile_features(Dolphin INTERFACE cxx_std_14)
 
-target_link_libraries(Dolphin PUBLIC CudaInterface::Cxx CudaInterface::Cu CUB half)
+target_link_libraries(Dolphin INTERFACE CudaInterface::Cxx CudaInterface::Cu CUB half)
 
-target_include_directories(Dolphin PUBLIC inc PRIVATE src)
+target_include_directories(Dolphin INTERFACE inc)
 
 ########################################################################
 #
