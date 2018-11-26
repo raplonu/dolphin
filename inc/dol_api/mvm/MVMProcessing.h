@@ -49,7 +49,7 @@ namespace dol
             xDim(x / VL), yDim(y), xRemaining(x % VL), xAlignDim(xAlign / VL), 
             linePerBlock(itemPerBlockLocalNb(y) / PL * PL),
             lineStart(BID * itemPerBlockNb(y)),
-            lineStartIrregular(lineStart + linePerBlock),
+            lineStartIrregular(linePerBlock),
             lineRemaining(itemPerBlockLocalNb(y) % PL)
         {
             // if(TID0)
@@ -165,7 +165,7 @@ namespace dol
 
         __device__ void computeRegular(MVMHandle & handle, const VectType * A, const VectType * X, VectType2 * Y) {
             for (int line(0); line < linePerBlock; line += PL)
-                computeBlockRegular(handle, A, X, Y, line + lineStart);
+                computeBlockRegular(handle, A, X, Y, line);
         }
 
         __device__ void computeIrregular(MVMHandle & handle, const VectType * A, const VectType * X, VectType2 * Y) {
@@ -178,10 +178,33 @@ namespace dol
             computeIrregular(handle, A, X, Y);
         }
 
-        // Compute Y = A * X
+        /**
+         * @brief Compute mvmv : Y = A * X
+         * 
+         * @param handle shared memory handler for reduction
+         * @param A input global matrix
+         * @param X input global vector
+         * @param Y output GLOBAL vector
+         */
         __device__ void compute(MVMHandle & handle, const T * A, const T * X, T * Y) {
             compute_(handle,
-                reinterpret_cast<const VectType*>(A),
+                reinterpret_cast<const VectType*>(A) + lineStart * xAlignDim,
+                reinterpret_cast<const VectType*>(X),
+                reinterpret_cast<VectType2*>(Y + lineStart));
+        }
+
+
+        /**
+         * @brief Compute mvmv : Y = A * X
+         * 
+         * @param handle shared memory handler for reduction
+         * @param A input global matrix
+         * @param X input global vector
+         * @param Y output SHARED vector
+         */
+        __device__ void computeShared(MVMHandle & handle, const T * A, const T * X, T * Y) {
+            compute_(handle,
+                reinterpret_cast<const VectType*>(A) + lineStart * xAlignDim,
                 reinterpret_cast<const VectType*>(X),
                 reinterpret_cast<VectType2*>(Y));
         }

@@ -23,6 +23,10 @@ namespace dol
         CI_DEVICE void compute(const T * A, const T * X, T * Y) {
             processing.compute(handle, A, X, Y);
         }
+
+        CI_DEVICE void computeShared(const T * A, const T * X, T * Y) {
+            processing.computeShared(handle, A, X, Y);
+        }
     };
     
 }
