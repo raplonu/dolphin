@@ -14,11 +14,9 @@ namespace dol
 
         VectType * reduceVect;
 
-        __device__ MVMHandle(T * shared)//: reduceVect(shared)
-        {
-            auto data = (unsigned char*)shared;
-            reduceVect = (VectType *)nextMul((int64_t) data, (int64_t)128);
-        }
+        __device__ MVMHandle(T * shared):
+            reduceVect((VectType *)shared)
+        {}
 
         __device__ void reduce(VectType & data)
         {

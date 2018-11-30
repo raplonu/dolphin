@@ -69,7 +69,8 @@ __global__ __launch_bounds__(1024, 2) void do_mvm(SharedReference<T> ref, int x,
 // BENCHMARK
 //#####################################################
 
-const int Y(5316), X(12800);
+// const int Y(5316), X(12800);
+const int Y(16384), X(16384);
 
 template<typename T, int PL, int VL>
 void dol_MVM(State& state) {

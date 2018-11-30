@@ -117,6 +117,23 @@ __global__ __launch_bounds__(1024, 2) void do_mvm(SharedReference<T> ref, int x,
     ci::syncthreads();
 }
 
+template<int ThreadsNb, int PL, int VL, typename T>
+__global__ __launch_bounds__(1024, 2) void do_mvm_shared(SharedReference<T> ref, SharedReference<T> out, int x, int y, int xAlign, const T * A, const T * X, T * Y)
+{
+    MVM<T, ThreadsNb, PL, VL> mvm(ref.get(), x, y, xAlign);
+
+    T * out_shared = out.get();
+
+    ci::syncthreads();
+
+    mvm.computeShared(A, X, out_shared);
+
+    ci::syncthreads();
+
+    if(TID < itemPerBlockLocalNb(y))
+        storeAt(Y, blockLoad(out_shared), BID * itemPerBlockNb(y) + TID);
+}
+
 const int NB = 4096;
 
 namespace
@@ -127,7 +144,7 @@ namespace
         MVMData<int> data(y,x);
         SharedContext sc(ci::Device(0), ThreadsNb);
 
-        auto ref = sc.registerBuffer<int>(32 * PL * 2); //x2 to be sure
+        auto ref = sc.registerBuffer<int>(32 * PL * 2, 128); //x2 to be sure
 
         do_mvm<ThreadsNb, PL, VT><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
 
@@ -182,7 +199,7 @@ namespace
         MVMData<int> data(y,x);
         SharedContext sc(ci::Device(0), ThreadsNb);
 
-        auto ref = sc.registerBuffer<int>(32 * PL * 2); //x2 to be sure
+        auto ref = sc.registerBuffer<int>(32 * PL * 2, 128); //x2 to be sure
 
         do_mvm<ThreadsNb, PL, VT><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
 
@@ -197,7 +214,7 @@ namespace
         MVMData<int> data(y,x);
         SharedContext sc(ci::Device(0), ThreadsNb);
 
-        auto ref = sc.registerBuffer<int>(32 * PL * 2); //x2 to be sure
+        auto ref = sc.registerBuffer<int>(32 * PL * 2, 128); //x2 to be sure
 
         do_mvm<ThreadsNb, PL, VT><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
 
@@ -212,7 +229,7 @@ namespace
         MVMData<int> data(y,x);
         SharedContext sc(ci::Device(0), ThreadsNb);
 
-        auto ref = sc.registerBuffer<int>(32 * PL * 2); //x2 to be sure
+        auto ref = sc.registerBuffer<int>(32 * PL * 2, 128); //x2 to be sure
 
         do_mvm<ThreadsNb, PL, VT><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
 
@@ -227,7 +244,7 @@ namespace
         MVMData<int> data(y,x);
         SharedContext sc(ci::Device(0), ThreadsNb);
 
-        auto ref = sc.registerBuffer<int>(32 * PL * 2); //x2 to be sure
+        auto ref = sc.registerBuffer<int>(32 * PL * 2, 128); //x2 to be sure
 
         do_mvm<ThreadsNb, PL, VT><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
 
@@ -242,7 +259,7 @@ namespace
         MVMData<int> data(y,x);
         SharedContext sc(ci::Device(0), ThreadsNb);
 
-        auto ref = sc.registerBuffer<int>(32 * PL * 2); //x2 to be sure
+        auto ref = sc.registerBuffer<int>(32 * PL * 2, 128); //x2 to be sure
 
         do_mvm<ThreadsNb, PL, VT><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
 
@@ -257,7 +274,7 @@ namespace
         MVMData<int> data(y,x);
         SharedContext sc(ci::Device(0), ThreadsNb);
 
-        auto ref = sc.registerBuffer<int>(32 * PL * 2); //x2 to be sure
+        auto ref = sc.registerBuffer<int>(32 * PL * 2, 128); //x2 to be sure
 
         do_mvm<ThreadsNb, PL, VL><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
 
@@ -272,7 +289,7 @@ namespace
         MVMData<int> data(y,x);
         SharedContext sc(ci::Device(0), ThreadsNb);
 
-        auto ref = sc.registerBuffer<int>(32 * PL * 2); //x2 to be sure
+        auto ref = sc.registerBuffer<int>(32 * PL * 2, 128); //x2 to be sure
 
         do_mvm<ThreadsNb, PL, VL><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
 
@@ -287,7 +304,7 @@ namespace
         MVMData<int> data(y,x);
         SharedContext sc(ci::Device(0), ThreadsNb);
 
-        auto ref = sc.registerBuffer<int>(32 * PL * 2); //x2 to be sure
+        auto ref = sc.registerBuffer<int>(32 * PL * 2, 128); //x2 to be sure
 
         do_mvm<ThreadsNb, PL, VL><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
 
@@ -302,7 +319,7 @@ namespace
         MVMData<float> data(y,x);
         SharedContext sc(ci::Device(0), ThreadsNb);
 
-        auto ref = sc.registerBuffer<float>(32 * PL * 2); //x2 to be sure
+        auto ref = sc.registerBuffer<float>(32 * PL * 2, 128); //x2 to be sure
 
         do_mvm<ThreadsNb, PL, VL><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
 
@@ -317,7 +334,7 @@ namespace
         MVMData<double> data(y,x);
         SharedContext sc(ci::Device(0), ThreadsNb);
 
-        auto ref = sc.registerBuffer<double>(32 * PL * 2); //x2 to be sure
+        auto ref = sc.registerBuffer<double>(32 * PL * 2, 128); //x2 to be sure
 
         do_mvm<ThreadsNb, PL, VL><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
 
@@ -334,8 +351,24 @@ namespace
         MVMData<float> data(y,x);
         SharedContext sc(ci::Device(0), ThreadsNb);
 
-        auto ref = sc.registerBuffer<float>(32 * PL * 2); //x2 to be sure
+        auto ref = sc.registerBuffer<float>(32 * PL * 2, 128); //x2 to be sure
         do_mvm<ThreadsNb, PL, VL><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
+
+        ci::synchronize();
+
+        EXPECT_TRUE(data.test());
+    }
+
+    TEST(MVMTest,  SimpleTest12800x5316_BLOCK32_PL4_VL4_float_shared)
+    {
+        // TODO fix PL != 1
+        const int y(5316), x(12800), ThreadsNb(1024), PL(1), VL(4), BLOCK(160);
+        MVMData<float> data(y,x);
+        SharedContext sc(ci::Device(0), ThreadsNb);
+
+        auto ref = sc.registerBuffer<float>(32 * PL * 2, 128); //x2 to be sure
+        auto out = sc.registerBuffer<float>(ceil(y, BLOCK), 128); //x2 to be sure
+        do_mvm_shared<ThreadsNb, PL, VL><<<BLOCK,ThreadsNb, sc.memoryUsed()>>>(ref, out, x, y, align(x), data.A.ptr().get(), data.X.ptr().get(), data.Y.ptr().get());
 
         ci::synchronize();
 

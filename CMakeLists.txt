@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.6)
 
 if(NOT TARGET CudaInterface::Cu)
+    if(NOT DEFINED CUDAINTERFACE_ROOT)
+        set(CUDAINTERFACE_ROOT $ENV{CUDAINTERFACE_ROOT})
+    endif()
     if(IS_DIRECTORY ${CUDAINTERFACE_ROOT})
         add_subdirectory(${CUDAINTERFACE_ROOT} cudainterface_dir)
     else()
