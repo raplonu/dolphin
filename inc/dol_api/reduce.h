@@ -10,7 +10,7 @@ namespace dol
     __device__ T warpReduce(T data)
     { 
         #pragma unroll
-        for (int offset(warpsize / 2); offset > 0; offset /= 2)
+        for (int offset(ci::warpsize / 2); offset > 0; offset /= 2)
             data += ci::shflDown(data, offset);
 
         return data;
@@ -19,7 +19,7 @@ namespace dol
     template<typename T>
     __device__ T blockReduce(T data, T * tmpShared)
     {
-        ci::SubGroup warp(TID, warpsize);
+        ci::SubGroup warp(TID, ci::warpsize);
 
         data = warpReduce(data);
 
