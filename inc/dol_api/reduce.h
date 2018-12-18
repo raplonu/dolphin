@@ -19,7 +19,7 @@ namespace dol
     template<typename T>
     __device__ T blockReduce(T data, T * tmpShared)
     {
-        ci::SubGroup warp(TID, ci::warpsize);
+        ci::WarpGroup warp;
 
         data = warpReduce(data);
 

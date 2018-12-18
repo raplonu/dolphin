@@ -7,5 +7,7 @@
 #include <dol_api/mvm/MVMHandle.h>
 #include <dol_api/mvm/MVMProcessing.h>
 #include <dol_api/mvm/MVM.h>
+#include <dol_api/frame/FramePosition.h>
+#include <dol_api/centroid/SHCentroid.h>
 
 #endif //DOLPHIN_API

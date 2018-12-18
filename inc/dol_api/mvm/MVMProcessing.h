@@ -110,7 +110,7 @@ namespace dol
         }
 
         __device__ auto exporterIrregular(VectType2 * Y) {
-            return [this, Y = Y] __device__ (const VectType2 & data) {
+            return [this, Y] __device__ (const VectType2 & data) {
                 auto YPtr = reinterpret_cast<T *>(Y);
 
                 if(TID0)
