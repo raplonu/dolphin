@@ -104,7 +104,7 @@ namespace dol
      * @return bool isActive 
      */
     CI_DEVICE inline bool isActive(int itemNb, int itemPerBlockNb) {
-        return (threadItemPos(itemPerBlockNb) < itemNb) && (TID < itemPerBlockNb);
+        return (threadItemPosCustom(itemPerBlockNb) < itemNb) && (TID < itemPerBlockNb);
     }
 
     /**

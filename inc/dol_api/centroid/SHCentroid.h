@@ -80,20 +80,25 @@ namespace dol {
                 for (int pixId(warp.pos); pixId < pixPerSubAp; pixId += ci::warpsize) {
                     T pixel = loader(frame + frameIndex.offsetAt(wfsId, roiLocalId + roiStartId, pixId));
 
-                    res.xSlope    += pixel * (pixId / frameIndex.pixelHandler().subApSize);
-                    res.ySlope    += pixel * (pixId % frameIndex.pixelHandler().subApSize);
+                    res.xSlope    += pixel * (pixId % frameIndex.pixelHandler().subApSize);
+                    res.ySlope    += pixel * (pixId / frameIndex.pixelHandler().subApSize);
                     res.intensity += pixel;
                 }
 
             // Reduce values
+
             res.xSlope    = dol::warpReduce(res.xSlope);
             res.ySlope    = dol::warpReduce(res.ySlope);
             res.intensity = dol::warpReduce(res.intensity);
 
+            auto halfsubs = (frameIndex.pixelHandler().subApSize - 1.) / 2;
             if(res.intensity >= intensityRef[globalIndex(wfsId, roiLocalId)])
-                return res;
+                return SubApRes{
+                    modulationFactor * (res.xSlope / res.intensity - halfsubs),
+                    modulationFactor * (res.ySlope / res.intensity - halfsubs),
+                    res.intensity};
             else
-                return SubApRes{};
+                return SubApRes{T{}, T{}, res.intensity};
         }
 
         template<typename Ptr, typename Loader, typename Exporter>
