@@ -11,7 +11,7 @@ void initRandom(Data && data)
     std::random_device rd;
     std::uniform_real_distribution<double> dist(-5, 5);
 
-    ci::BHArray<T> tmp(ma::size(data));
+    ci::BasicHostArray<T> tmp(ma::size(data));
 
     for(auto & e : tmp) e = (T)dist(rd);
 

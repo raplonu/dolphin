@@ -20,9 +20,9 @@ using half_d = half;
 template<typename T>
 struct MVMData
 {
-    MDArray<T> A;
-    BDArray<T> X;
-    BDArray<T> Y;
+    MultiLinearDeviceArray<T> A;
+    BasicDeviceArray<T> X;
+    BasicDeviceArray<T> Y;
 
     int yDim, xDim;
 
@@ -38,9 +38,9 @@ struct MVMData
 template<>
 struct MVMData<half_h>
 {
-    MDArray<half_h> A;
-    BDArray<half_h> X;
-    BDArray<half_h> Y;
+    MultiLinearDeviceArray<half_h> A;
+    BasicDeviceArray<half_h> X;
+    BasicDeviceArray<half_h> Y;
 
     int yDim, xDim;
 

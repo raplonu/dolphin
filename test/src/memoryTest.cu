@@ -50,7 +50,7 @@ namespace
 {
     TEST(loadTest,  SimpleLoadAt)
     {
-        BDArray<int> dataIn(NB), dataOut(NB);
+        BasicDeviceArray<int> dataIn(NB), dataOut(NB);
         initRandom(dataIn);
 
         ker_loadAt<<<1,1>>>(dataOut.ptr().get(), dataIn.ptr().get(), NB);
@@ -62,7 +62,7 @@ namespace
 
     TEST(loadTest, WarpLoad)
     {
-        BDArray<int> dataIn(NB), dataOut(NB);
+        BasicDeviceArray<int> dataIn(NB), dataOut(NB);
         initRandom(dataIn);
 
         ker_warpLoad<<<8,NB/8>>>(dataOut.ptr().get(), dataIn.ptr().get(), NB);
@@ -74,7 +74,7 @@ namespace
 
     TEST(loadTest, BlockLoad)
     {
-        BDArray<int> dataIn(NB), dataOut(NB);
+        BasicDeviceArray<int> dataIn(NB), dataOut(NB);
         initRandom(dataIn);
 
         ker_blockLoad<<<8,NB/8>>>(dataOut.ptr().get(), dataIn.ptr().get(), NB);
@@ -86,7 +86,7 @@ namespace
 
     TEST(loadTest, DeviceLoad)
     {
-        BDArray<int> dataIn(NB), dataOut(NB);
+        BasicDeviceArray<int> dataIn(NB), dataOut(NB);
         initRandom(dataIn);
 
         ker_deviceLoad<<<8,NB/8>>>(dataOut.ptr().get(), dataIn.ptr().get(), NB);

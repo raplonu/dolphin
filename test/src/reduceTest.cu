@@ -46,14 +46,14 @@ namespace
 {
     TEST(reduceTest,  WarpReduce)
     {
-        BDArray<int> dataIn(NB), dataOut(NB/32);
+        BasicDeviceArray<int> dataIn(NB), dataOut(NB/32);
         initRandom(dataIn);
 
         ker_warpReduce<<<NB/1024,1024>>>(dataOut.ptr().get(), dataIn.ptr().get(), NB);
 
         ci::synchronize();
 
-        BHArray<int> result(NB/32);
+        BasicHostArray<int> result(NB/32);
 
         for(int i{}; i < NB/32; ++i)
         {
@@ -66,14 +66,14 @@ namespace
 
     TEST(reduceTest,  BlockReduce)
     {
-        BDArray<int> dataIn(NB), dataOut(NB/1024);
+        BasicDeviceArray<int> dataIn(NB), dataOut(NB/1024);
         initRandom(dataIn);
 
         ker_blockReduce<<<NB/1024,1024>>>(dataOut.ptr().get(), dataIn.ptr().get(), NB);
 
         ci::synchronize();
 
-        BHArray<int> result(NB/1024);
+        BasicHostArray<int> result(NB/1024);
 
         for(int i{}; i < NB/1024; ++i)
         {
